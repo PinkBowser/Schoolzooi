@@ -99,7 +99,7 @@ Resources:
           VolumeSize: 10
           Encrypted: "true"
       InstanceType: t2.micro
-      ImageId: ami-082b1f4237bd816a1
+      ImageId: ami-0e86e20dae9224db8
       KeyName: vockey
       SecurityGroupIds: 
         - !Ref LucasSecurityGroup
