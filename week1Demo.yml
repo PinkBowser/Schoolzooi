@@ -28,6 +28,7 @@ Resources:
         - Key: Name
           Value: lucasVPC
 
+# Publiek Subnet aanmaken
   lucasSubnet:
     Type: AWS::EC2::Subnet
     Properties:
@@ -38,6 +39,7 @@ Resources:
         - Key: Name
           Value: lucasSubnet
 
+# Internet Gateway
   lucasIGW:
     Type: AWS::EC2::InternetGateway
     Properties:
@@ -45,12 +47,14 @@ Resources:
         - Key: Name
           Value: leuke name
 
+# Koppelen IGateway aan VPC
   AttachGateway:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
       VpcId: !Ref lucasVPC
       InternetGatewayId: !Ref lucasIGW
 
+# aanmaken routetable en koppelen VPC
   lucasRT:
     Type: AWS::EC2::RouteTable
     Properties:
@@ -59,12 +63,14 @@ Resources:
         - Key: Name
           Value: leuke name1
 
+# koppelen subnet met de route table
   LucasSubnetRT:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId: !Ref lucasSubnet
       RouteTableId: !Ref lucasRT
 
+# moet een route in de route table
   LucasRoute:
     Type: AWS::EC2::Route
     DependsOn: lucasIGW
@@ -73,6 +79,7 @@ Resources:
        DestinationCidrBlock: 0.0.0.0/0
        GatewayId: !Ref lucasIGW
 
+# security group dat 80 en 22 toestaat
   LucasSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -88,6 +95,7 @@ Resources:
           ToPort: 22
           CidrIp: 0.0.0.0/0
 
+# de ec2 instance en nginx erop
   ec2Instance: 
     Type: AWS::EC2::Instance
     Properties:
