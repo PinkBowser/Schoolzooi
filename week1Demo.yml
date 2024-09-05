@@ -18,26 +18,27 @@ Parameters:
     Type: String
     Default: 10.0.10.0/24
 # The cloud resources your template is going to create.
+
 Resources:
-  MyFirstVPC:
+  lucasVPC:
     Type: AWS::EC2::VPC
     Properties:
       CidrBlock: !Ref VPCCIDR
       Tags: # Good practice is to add tags!
         - Key: Name
-          Value: MyFirstVPC
+          Value: lucasVPC
 
-  MyFirstSubnet:
+  lucasSubnet:
     Type: AWS::EC2::Subnet
     Properties:
       CidrBlock: !Ref PublicSubnetCIDR
       MapPublicIpOnLaunch: yes # Important! See documentation.
-      VpcId: !Ref MyFirstVPC
+      VpcId: !Ref lucasVPC
       Tags:
         - Key: Name
-          Value: MyFirstSubnet
+          Value: lucasSubnet
 
-  myInternetGateway:
+  lucasIGW:
     Type: AWS::EC2::InternetGateway
     Properties:
       Tags:
@@ -47,40 +48,36 @@ Resources:
   AttachGateway:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
-      VpcId: !Ref MyFirstVPC
-      InternetGatewayId: !Ref myInternetGateway
+      VpcId: !Ref lucasVPC
+      InternetGatewayId: !Ref lucasIGW
 
-  myFirstRouteTable:
+  lucasRT:
     Type: AWS::EC2::RouteTable
     Properties:
-      VpcId: !Ref MyFirstVPC
+      VpcId: !Ref lucasVPC
       Tags:
         - Key: Name
           Value: leuke name1
 
-  mySubnetRouteTableAssociation:
+  LucasSubnetRT:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      SubnetId:
-        Ref: MyFirstSubnet
-      RouteTableId:
-        Ref: myFirstRouteTable
+      SubnetId: !Ref lucasSubnet
+      RouteTableId: !Ref lucasRT
 
-  myRoute:
+  LucasRoute:
     Type: AWS::EC2::Route
-    DependsOn: myInternetGateway
+    DependsOn: lucasIGW
     Properties:
-       RouteTableId:
-         Ref: myFirstRouteTable
+       RouteTableId: !Ref lucasRT
        DestinationCidrBlock: 0.0.0.0/0
-       GatewayId:
-         Ref: myInternetGateway
+       GatewayId: !Ref lucasIGW
 
-  InstanceSecurityGroup:
+  LucasSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Allow http to client host
-      VpcId: !Ref MyFirstVPC
+      VpcId: !Ref lucasVPC
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 80
@@ -91,3 +88,32 @@ Resources:
           ToPort: 22
           CidrIp: 0.0.0.0/0
 
+  ec2Instance: 
+    Type: AWS::EC2::Instance
+    Properties:
+      BlockDeviceMappings:
+      - DeviceName: /dev/sda1
+        Ebs:
+          DeleteOnTermination: true
+          VolumeType: gp2
+          VolumeSize: 10
+          Encrypted: "true"
+      InstanceType: t2.micro
+      ImageId: ami-082b1f4237bd816a1
+      KeyName: vockey
+      SecurityGroupIds: 
+        - !Ref LucasSecurityGroup
+      SubnetId: !Ref lucasSubnet
+      Tags:
+        - Key: Name
+          Value: testLucas
+      UserData:
+        Fn::Base64: 
+          !Sub |
+            #!/bin/bash -xe
+            apt update -y
+            apt install nginx -y
+Outputs:
+  Website:
+    Description: The Public DNS for the EC2 Instance
+    Value: !Sub 'http://${ec2Instance.PublicDnsName}'
