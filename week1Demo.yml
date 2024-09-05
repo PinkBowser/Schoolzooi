@@ -121,3 +121,11 @@ Resources:
             #!/bin/bash -xe
             apt update -y
             apt install nginx -y
+
+# Laat de ip addres zien zodat je kan checken of ie t doet
+Outputs:
+  PublicIp:
+    Description: Server Public IP
+    Value: !GetAtt ec2Instance.PublicIp
+    Export:
+      Name: !Sub "${AWS::StackName}-PublicIp"
