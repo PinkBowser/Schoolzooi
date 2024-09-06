@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lucas-deployment
+spec:
+  replicas: 2  # Number of instances (pods) to run
+  selector:
+    matchLabels:
+      app: lucas-container
+# everything under template is the definition of the pod that will be created.      
+  template:
+    metadata:
+      labels:
+        app: lucas-container
+    spec:
+      containers:
+      - name: web-app
+        image: jameshond7/containerlucas:latest
+        ports:
+        - containerPort: 80
